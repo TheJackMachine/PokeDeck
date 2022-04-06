@@ -1,6 +1,7 @@
 <?php namespace App\Classes;
 
 use Pokemon\Pokemon;
+use Illuminate\Support\Str;
 use App\Exceptions\InvalidType;
 
 class Deck
@@ -8,6 +9,7 @@ class Deck
 
     protected static $validTypes;
     protected array $cards = [];
+    protected $uid;
 
     protected string $typeFocused; // What type of Pokemon this deck is focused ?
     protected int $typeMaxRange = 16; // Min cards of that type
@@ -21,6 +23,7 @@ class Deck
      */
     public function __construct($type)
     {
+        $this->uid = Str::orderedUuid();
         self::initValidTypes();
         $this->create($type);
     }
@@ -106,17 +109,22 @@ class Deck
     {
         $trainerCards = self::fetchTrainingCard();
         $cards = [];
+        $occurrences = [];
         for ($n = 0; $n < $number; $n++) {
+            // get random card and prevent more than 4 to be the same
+            do {
+                $selectedCard = self::randomCard($trainerCards);
+            } while( array_key_exists($selectedCard->getName(),$occurrences) &&  $occurrences[$selectedCard->getName()] == 4 );
+            // track occurrence
+            if (!array_key_exists($selectedCard->getName(),$occurrences)) {
+                $occurrences[$selectedCard->getName()] = 1;
+            } else {
+                $occurrences[$selectedCard->getName()]++;
+            }
+            // if ok, add to selection
             $cards[] = self::randomCard($trainerCards);
         }
         return $cards;
-    }
-
-    public function show()
-    {
-        foreach ($this->cards as $card) {
-            echo $card->getName() . "\r\n";
-        }
     }
 
     /**
