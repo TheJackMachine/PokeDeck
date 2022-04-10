@@ -23,9 +23,14 @@ class DeckGenerator
      * Fill this deck
      * @throws InvalidType
      */
-    public static function create($type): Deck
+    public static function create($type = null): Deck
     {
         self::initValidTypes();
+
+        if (empty($type)) {
+            $type = self::randomType();
+        }
+
         $cards = [];
         // 0 - verify type is valid
         self::validateType($type);
@@ -39,6 +44,33 @@ class DeckGenerator
         // 3 - Add training card
         $cards = [...$cards, ...self::addTrainerCards(self::getRemainderCardsNumber($cards))];
 
+        // 4 - save cards in Database
+        $uidList = self::saveCards($cards);
+
+        // Get Cards from database
+        $cardsToAssociate = Card::whereIn('uid', $uidList)->get();
+
+        // Save Deck
+        // todo: add Name ?
+        $deck = Deck::create([
+            'uuid' => Str::orderedUuid(),
+            'focus' => $type,
+        ]);
+
+        // Associations
+        $deck->cards()->saveMany($cardsToAssociate);
+
+        // Refresh and return a new fresh deck
+        return Deck::where('uuid', $deck->uuid)->with('cards')->first();
+    }
+
+    /**
+     * Save new card in database for later research
+     * @param $cards
+     * @return array // The uid list of all cards
+     */
+    protected static function saveCards($cards): array
+    {
         // Check existing saved Cards
         $savedCards = Card::pluck('uid')->toArray();
         // Save cards if not exists
@@ -54,21 +86,7 @@ class DeckGenerator
                 ]);
             }
         }
-
-        // Get Cards from database
-        $cardsToAssociate = Card::whereIn('uid', $uidList)->get();
-
-        // Save Deck
-        // todo: add Name ?
-        $deck = Deck::create([
-            'uuid' => Str::orderedUuid(),
-        ]);
-
-        // Associations
-        $deck->cards()->saveMany($cardsToAssociate);
-
-        // Refresh
-        return Deck::where('uuid', $deck->uuid)->with('cards')->first();
+        return $uidList;
     }
 
     /**
@@ -150,6 +168,16 @@ class DeckGenerator
     {
         return $cards[rand(0, count($cards) - 1)];
     }
+
+    /**
+     * Return a random type
+     * @return string
+     */
+    public static function randomType(): string
+    {
+        return self::$validTypes[rand(0, count(self::$validTypes) - 1)];
+    }
+
 
     /**
      * Fetch Pokemon card by type via API

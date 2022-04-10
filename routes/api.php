@@ -21,7 +21,7 @@ use App\Classes\DeckGenerator;
 
 Route::get('/generate', function (Request $request) {
 
-    $deck = DeckGenerator::create('Fire');
+    $deck = DeckGenerator::create();
     dd($deck);
 
     // $cards = Pokemon::Card()->all();

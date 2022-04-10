@@ -13,6 +13,7 @@ class Deck extends Model
     protected $fillable = [
         'uuid',
         'name',
+        'focus',
     ];
 
     public function cards()

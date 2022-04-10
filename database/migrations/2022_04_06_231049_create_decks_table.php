@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->uuid()->index();
             $table->string('name')->nullable(); // Deck name
+            $table->string('focus')->nullable(); // Type focused
             $table->timestamps();
         });
     }
