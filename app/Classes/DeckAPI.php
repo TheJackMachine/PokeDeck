@@ -1,5 +1,6 @@
 <?php namespace App\Classes;
 
+use App\Exceptions\NotFound;
 use App\Http\Resources\Deck as DeckResource;
 
 use App\Classes\DeckGenerator;
@@ -20,10 +21,12 @@ class DeckAPI
     /**
      * Return specific deck
      * @param $deckUUID
+     * @throws NotFound
      */
     static public function detail($deckUUID)
     {
         $deck = Deck::where('uuid', $deckUUID)->with('cards')->first();
+        if (empty($deck)) throw new NotFound();
         return new DeckResource($deck);
     }
 
