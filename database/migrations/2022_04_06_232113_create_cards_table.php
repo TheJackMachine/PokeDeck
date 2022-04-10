@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('uid')->index();
             $table->string('name');
             $table->string('supertype');
-            $table->string('types');
+            $table->json('types');
             $table->timestamps();
         });
     }

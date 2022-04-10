@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('decks', function (Blueprint $table) {
             $table->id();
             $table->uuid()->index();
-            $table->string('name'); // Deck name
+            $table->string('name')->nullable(); // Deck name
             $table->timestamps();
         });
     }

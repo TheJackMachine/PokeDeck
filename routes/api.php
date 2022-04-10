@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Cards;
 use Pokemon\Pokemon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,15 +18,10 @@ use App\Classes\Deck;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::get('/generate', function (Request $request) {
 
-Route::get('/test', function (Request $request) {
-
-    $deck = new Deck('Fire');
-    $deck->show();
-    dd('stop');
+    $deck = new \App\Classes\DeckGenerator('Fire');
+    dd($deck);
 
     // $cards = Pokemon::Card()->all();
     $card = Pokemon::Card()->find('xy1-1');
@@ -37,4 +33,9 @@ Route::get('/test', function (Request $request) {
 
     dd($supertypes,$types,$card,$cards[100]);
     return Response::json(['test'=>'top']);
+});
+
+Route::get('/test', function (Request $request) {
+    $allCarts = Cards::pluck('uid')->toArray();
+    dd($allCarts);
 });

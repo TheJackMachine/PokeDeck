@@ -4,12 +4,15 @@ use Pokemon\Pokemon;
 use Illuminate\Support\Str;
 use App\Exceptions\InvalidType;
 
-class Deck
+use App\Models\Card;
+use App\Models\Deck;
+
+class DeckGenerator
 {
 
     protected static $validTypes;
     protected array $cards = [];
-    protected $uid;
+    protected $uuid;
 
     protected string $typeFocused; // What type of Pokemon this deck is focused ?
     protected int $typeMaxRange = 16; // Min cards of that type
@@ -23,7 +26,7 @@ class Deck
      */
     public function __construct($type)
     {
-        $this->uid = Str::orderedUuid();
+        $this->uuid = Str::orderedUuid();
         self::initValidTypes();
         $this->create($type);
     }
@@ -39,7 +42,7 @@ class Deck
         $this->typeFocused = $type;
 
         // 1 - Add 12 - 16 pokemon card of specific type
-        $this->cards = $this->addPokemonCards($this->typeFocused, $this->numberOfPokemonCards());
+        $this->cards = $this->addPokemonCards($type, $this->numberOfPokemonCards());
 
         // 2 - Add 10 energy cards
         $this->cards = [...$this->cards, ...$this->addEnergyCards($this->typeFocused, $this->energyNumber)];
@@ -47,14 +50,35 @@ class Deck
         // 3 - Add training card
         $this->cards = [...$this->cards, ...$this->addTrainerCards($this->getRemainderCardsNumber())];
 
-    }
+        // Check existing saved Cards
+        $savedCards = Card::pluck('uid')->toArray();
+        // Save cards if not exists
+        $uidList = [];
+        foreach ($this->cards as $card) {
+            $uidList[] = $card->getId();
+            if (!in_array($card->getId(),$savedCards)) {
+                Card::create([
+                    'uid' => $card->getId(),
+                    'name' => $card->getName(),
+                    'supertype' => $card->getSupertype(),
+                    'types' => json_encode($card->getTypes())
+                ]);
+            }
+        }
 
-    /**
-     * Shuffle the deck
-     */
-    public function shuffle()
-    {
-        // TODO: LMFAO Everyday I'm shuffling
+        // Get Cards from database
+        $cardsToAssociate = Card::whereIn('uid',$uidList)->get();
+
+        // Save Deck
+        // todo: add Name ?
+        $deck = Deck::create([
+            'uuid' => $this->uuid,
+        ]);
+
+        // Associations
+        $deck->cards()->saveMany($cardsToAssociate);
+        // Refresh
+        return Deck::where('uuid',$deck->uuid)->with('cards')->first();
     }
 
     /**
@@ -114,9 +138,9 @@ class Deck
             // get random card and prevent more than 4 to be the same
             do {
                 $selectedCard = self::randomCard($trainerCards);
-            } while( array_key_exists($selectedCard->getName(),$occurrences) &&  $occurrences[$selectedCard->getName()] == 4 );
+            } while (array_key_exists($selectedCard->getName(), $occurrences) && $occurrences[$selectedCard->getName()] == 4);
             // track occurrence
-            if (!array_key_exists($selectedCard->getName(),$occurrences)) {
+            if (!array_key_exists($selectedCard->getName(), $occurrences)) {
                 $occurrences[$selectedCard->getName()] = 1;
             } else {
                 $occurrences[$selectedCard->getName()]++;
