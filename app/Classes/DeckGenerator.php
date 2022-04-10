@@ -31,7 +31,6 @@ class DeckGenerator
             $type = self::randomType();
         }
 
-        $cards = [];
         // 0 - verify type is valid
         self::validateType($type);
 
