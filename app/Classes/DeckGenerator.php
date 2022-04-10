@@ -11,52 +11,41 @@ class DeckGenerator
 {
 
     protected static $validTypes;
-    protected array $cards = [];
-    protected $uuid;
 
     protected string $typeFocused; // What type of Pokemon this deck is focused ?
-    protected int $typeMaxRange = 16; // Min cards of that type
-    protected int $typeMinRange = 12; // Max cards of that type
-    protected int $energyNumber = 10; // Number of energy card to add
+    protected static int $typeMaxRange = 16; // Min cards of that type
+    protected static int $typeMinRange = 12; // Max cards of that type
+    protected static int $energyNumber = 10; // Number of energy card to add
 
-    protected int $deckSize = 60; // Number of cards in the deck
-
-    /**
-     * @throws InvalidType
-     */
-    public function __construct($type)
-    {
-        $this->uuid = Str::orderedUuid();
-        self::initValidTypes();
-        $this->create($type);
-    }
+    protected static int $deckSize = 60; // Number of cards in the deck
 
     /**
      * Fill this deck
      * @throws InvalidType
      */
-    protected function create($type)
+    public static function create($type): Deck
     {
+        self::initValidTypes();
+        $cards = [];
         // 0 - verify type is valid
         self::validateType($type);
-        $this->typeFocused = $type;
 
         // 1 - Add 12 - 16 pokemon card of specific type
-        $this->cards = $this->addPokemonCards($type, $this->numberOfPokemonCards());
+        $cards = self::addPokemonCards($type, self::numberOfPokemonCards());
 
         // 2 - Add 10 energy cards
-        $this->cards = [...$this->cards, ...$this->addEnergyCards($this->typeFocused, $this->energyNumber)];
+        $cards = [...$cards, ...self::addEnergyCards($type, self::$energyNumber)];
 
         // 3 - Add training card
-        $this->cards = [...$this->cards, ...$this->addTrainerCards($this->getRemainderCardsNumber())];
+        $cards = [...$cards, ...self::addTrainerCards(self::getRemainderCardsNumber($cards))];
 
         // Check existing saved Cards
         $savedCards = Card::pluck('uid')->toArray();
         // Save cards if not exists
         $uidList = [];
-        foreach ($this->cards as $card) {
+        foreach ($cards as $card) {
             $uidList[] = $card->getId();
-            if (!in_array($card->getId(),$savedCards)) {
+            if (!in_array($card->getId(), $savedCards)) {
                 Card::create([
                     'uid' => $card->getId(),
                     'name' => $card->getName(),
@@ -67,41 +56,42 @@ class DeckGenerator
         }
 
         // Get Cards from database
-        $cardsToAssociate = Card::whereIn('uid',$uidList)->get();
+        $cardsToAssociate = Card::whereIn('uid', $uidList)->get();
 
         // Save Deck
         // todo: add Name ?
         $deck = Deck::create([
-            'uuid' => $this->uuid,
+            'uuid' => Str::orderedUuid(),
         ]);
 
         // Associations
         $deck->cards()->saveMany($cardsToAssociate);
+
         // Refresh
-        return Deck::where('uuid',$deck->uuid)->with('cards')->first();
+        return Deck::where('uuid', $deck->uuid)->with('cards')->first();
     }
 
     /**
      * return number of pokemon cards to get
      * @return int
      */
-    protected function numberOfPokemonCards(): int
+    protected static function numberOfPokemonCards(): int
     {
-        return rand($this->typeMaxRange, $this->typeMinRange);
+        return rand(self::$typeMaxRange, self::$typeMinRange);
     }
 
     /**
      * Return number of cards to complete the deck
      */
-    public function getRemainderCardsNumber()
+    protected static function getRemainderCardsNumber(array $card): int
     {
-        return $this->deckSize - count($this->cards);
+        return self::$deckSize - count($card);
     }
 
     /**
      * Add 12 - 16 pokemon card of specific type
      */
-    protected function addPokemonCards($type, $number)
+    protected static function addPokemonCards($type, $number): array
     {
         // 1 - Get pokemon of that type
         $pokemonCards = self::fetchPokemonType($type);
@@ -116,7 +106,7 @@ class DeckGenerator
     /**
      * Add 10 energy cards of specific type
      */
-    protected function addEnergyCards($type, $number): array
+    protected static function addEnergyCards($type, $number): array
     {
         $energyCards = self::fetchEnergyType($type);
         $cards = [];
@@ -129,7 +119,7 @@ class DeckGenerator
     /**
      * Add training card
      */
-    protected function addTrainerCards($number)
+    protected static function addTrainerCards($number): array
     {
         $trainerCards = self::fetchTrainingCard();
         $cards = [];

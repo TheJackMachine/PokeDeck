@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Classes\Deck;
+use App\Classes\DeckGenerator;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +21,7 @@ use App\Classes\Deck;
 
 Route::get('/generate', function (Request $request) {
 
-    $deck = new \App\Classes\DeckGenerator('Fire');
+    $deck = DeckGenerator::create('Fire');
     dd($deck);
 
     // $cards = Pokemon::Card()->all();
