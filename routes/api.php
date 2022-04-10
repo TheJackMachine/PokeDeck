@@ -1,11 +1,12 @@
 <?php
 
-use App\Models\Cards;
 use Pokemon\Pokemon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Models\Cards;
 use App\Classes\Deck;
+use App\Classes\DeckAPI;
 use App\Classes\DeckGenerator;
 
 /*
@@ -19,24 +20,11 @@ use App\Classes\DeckGenerator;
 |
 */
 
-Route::get('/generate', function (Request $request) {
-
-    $deck = DeckGenerator::create();
-    dd($deck);
-
-    // $cards = Pokemon::Card()->all();
-    $card = Pokemon::Card()->find('xy1-1');
-    $supertypes = Pokemon::Supertype()->all();
-    $types = Pokemon::Type()->all();
-    $cards = Pokemon::Card()->where([
-        'supertype' => 'Trainer',
-    ])->all();
-
-    dd($supertypes,$types,$card,$cards[100]);
-    return Response::json(['test'=>'top']);
-});
-
-Route::get('/test', function (Request $request) {
-    $allCarts = Cards::pluck('uid')->toArray();
-    dd($allCarts);
-});
+// List of all decks
+Route::get('/decks', [DeckAPI::class, 'index']);
+// Generate a new deck
+Route::get('/decks/generator', [DeckAPI::class, 'generate']);
+// Generate a focused deck
+Route::get('/decks/generator/{type}', [DeckAPI::class, 'generate']);
+// Check specific deck
+Route::get('/decks/{id}', [DeckAPI::class, 'detail']);

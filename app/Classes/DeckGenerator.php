@@ -81,7 +81,7 @@ class DeckGenerator
                     'uid' => $card->getId(),
                     'name' => $card->getName(),
                     'supertype' => $card->getSupertype(),
-                    'types' => json_encode($card->getTypes())
+                    'types' => empty( $card->getTypes() ) ? [] : $card->getTypes(),
                 ]);
             }
         }

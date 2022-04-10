@@ -1,24 +1,22 @@
-<?php
-
-namespace App\Http\Resources;
+<?php namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class Deck extends JsonResource
+class Card extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
         return [
-            'uuid' => $this->uuid,
+            'uid' => $this->uid,
             'name' => $this->name,
-            'focus' => $this->focus,
-            'cards' => Card::collection($this->whenLoaded('cards'))
+            'supertype' => $this->supertype,
+            'types' => $this->types,
         ];
     }
 

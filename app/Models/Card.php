@@ -17,6 +17,10 @@ class Card extends Model
         'types',
     ];
 
+    protected $casts = [
+        'types' => 'array'
+    ];
+
     /**
      * The users that belong to the role.
      */
