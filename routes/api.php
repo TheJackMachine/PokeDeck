@@ -23,8 +23,8 @@ use App\Classes\DeckGenerator;
 // List of all decks
 Route::get('/decks', [DeckAPI::class, 'index']);
 // Generate a new deck
-Route::get('/decks/generator', [DeckAPI::class, 'generate']);
+Route::get('/decks/generate', [DeckAPI::class, 'generate']);
 // Generate a focused deck
-Route::get('/decks/generator/{type}', [DeckAPI::class, 'generate']);
+Route::get('/decks/generate/{type}', [DeckAPI::class, 'generate']);
 // Check specific deck
 Route::get('/decks/{id}', [DeckAPI::class, 'detail']);
