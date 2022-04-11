@@ -27,4 +27,4 @@ Route::get('/decks/generate', [DeckAPI::class, 'generate']);
 // Generate a focused deck
 Route::get('/decks/generate/{type}', [DeckAPI::class, 'generate']);
 // Check specific deck
-Route::get('/decks/{id}', [DeckAPI::class, 'detail']);
+Route::get('/decks/{uuid}', [DeckAPI::class, 'detail']);
