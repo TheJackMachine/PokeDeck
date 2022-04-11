@@ -10,9 +10,7 @@ use App\Models\Deck;
 class DeckGenerator
 {
 
-    protected static $validTypes;
-
-    protected string $typeFocused; // What type of Pokemon this deck is focused ?
+    protected static array $validTypes = [];
     protected static int $typeMaxRange = 16; // Min cards of that type
     protected static int $typeMinRange = 12; // Max cards of that type
     protected static int $energyNumber = 10; // Number of energy card to add
@@ -58,6 +56,7 @@ class DeckGenerator
      */
     protected static function generateDeck($type = null): array
     {
+        Pokemon::ApiKey(env('POKEMON_API_KEY'));
 
         self::initValidTypes();
 
@@ -168,7 +167,7 @@ class DeckGenerator
                 $occurrences[$selectedCard->getName()]++;
             }
             // if ok, add to selection
-            $cards[] = self::randomCard($trainerCards);
+            $cards[] = $selectedCard;
         }
         return $cards;
     }
