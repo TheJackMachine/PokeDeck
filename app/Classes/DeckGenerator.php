@@ -25,23 +25,8 @@ class DeckGenerator
      */
     public static function create($type = null): Deck
     {
-        self::initValidTypes();
 
-        if (empty($type)) {
-            $type = self::randomType();
-        }
-
-        // 0 - verify type is valid
-        self::validateType($type);
-
-        // 1 - Add 12 - 16 pokemon card of specific type
-        $cards = self::addPokemonCards($type, self::numberOfPokemonCards());
-
-        // 2 - Add 10 energy cards
-        $cards = [...$cards, ...self::addEnergyCards($type, self::$energyNumber)];
-
-        // 3 - Add training card
-        $cards = [...$cards, ...self::addTrainerCards(self::getRemainderCardsNumber($cards))];
+        $cards = self::generateDeck($type);
 
         // 4 - save cards in Database
         $uidList = self::saveCards($cards);
@@ -61,6 +46,36 @@ class DeckGenerator
 
         // Refresh and return a new fresh deck
         return Deck::where('uuid', $deck->uuid)->with('cards')->first();
+    }
+
+
+    /**
+     * Generate a deck following rules
+     *
+     * @param null $type
+     * @return array
+     * @throws InvalidType
+     */
+    protected static function generateDeck($type = null): array
+    {
+
+        self::initValidTypes();
+
+        if (empty($type)) {
+            $type = self::randomType();
+        }
+
+        // 0 - verify type is valid
+        self::validateType($type);
+
+        // 1 - Add 12 - 16 pokemon card of specific type
+        $cards = self::addPokemonCards($type, self::numberOfPokemonCards());
+
+        // 2 - Add 10 energy cards
+        $cards = [...$cards, ...self::addEnergyCards($type, self::$energyNumber)];
+
+        // 3 - Add training card
+        return [...$cards, ...self::addTrainerCards(self::getRemainderCardsNumber($cards))];
     }
 
     /**
