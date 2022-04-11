@@ -1,7 +1,13 @@
 <?php
 
+use Pokemon\Pokemon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+use App\Models\Cards;
+use App\Classes\Deck;
+use App\Classes\DeckAPI;
+use App\Classes\DeckGenerator;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +20,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// List of all decks
+Route::get('/decks', [DeckAPI::class, 'index']);
+// Generate a new deck
+Route::get('/decks/generate', [DeckAPI::class, 'generate']);
+// Generate a focused deck
+Route::get('/decks/generate/{type}', [DeckAPI::class, 'generate']);
+// Check specific deck
+Route::get('/decks/{uuid}', [DeckAPI::class, 'detail']);
