@@ -23,6 +23,9 @@ class DeckGenerator
      */
     public static function create($type = null): Deck
     {
+        self::init();
+
+        $type = self::checkType($type);
 
         $cards = self::generateDeck($type);
 
@@ -46,6 +49,25 @@ class DeckGenerator
         return Deck::where('uuid', $deck->uuid)->with('cards')->first();
     }
 
+    /**
+     * Set some stuff before start
+     */
+    public static function init()
+    {
+        Pokemon::ApiKey(env('POKEMON_API_KEY'));
+        self::initValidTypes();
+    }
+
+    /**
+     * Return a type after verifying
+     * @param $type
+     * @return string
+     */
+    protected static function checkType($type): string
+    {
+        if (empty($type)) return self::randomType();
+        return $type;
+    }
 
     /**
      * Generate a deck following rules
@@ -54,16 +76,8 @@ class DeckGenerator
      * @return array
      * @throws InvalidType
      */
-    protected static function generateDeck($type = null): array
+    protected static function generateDeck($type): array
     {
-        Pokemon::ApiKey(env('POKEMON_API_KEY'));
-
-        self::initValidTypes();
-
-        if (empty($type)) {
-            $type = self::randomType();
-        }
-
         // 0 - verify type is valid
         self::validateType($type);
 
@@ -95,7 +109,7 @@ class DeckGenerator
                     'uid' => $card->getId(),
                     'name' => $card->getName(),
                     'supertype' => $card->getSupertype(),
-                    'types' => empty( $card->getTypes() ) ? [] : $card->getTypes(),
+                    'types' => empty($card->getTypes()) ? [] : $card->getTypes(),
                 ]);
             }
         }

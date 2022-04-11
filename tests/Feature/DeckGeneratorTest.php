@@ -20,6 +20,7 @@ class DeckGeneratorTest extends TestCase
     #[NoReturn] public function setUp(): void
     {
         parent::setUp();
+        DeckGenerator::init();
         $method = self::getMethod('generateDeck');
         $this->cards = $method->invokeArgs(null, ['Fire']);
     }
